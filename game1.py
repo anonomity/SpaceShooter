@@ -9,7 +9,7 @@ heart1 = Actor('heart', center=(850,40))
 heart2 = Actor('heart', center=(890,40))
 heart3 = Actor('heart', center=(930,40))
 poke = Actor('poke', center=(random.randint(10,900),-10))
-
+barrier = Actor('barrier', center=(300, 300))
 
 WIDTH = 1000
 HEIGHT = 700
@@ -19,9 +19,9 @@ score = 0
 gameOver = False
 restart = False
 timer = 1000
-level = 1
+level = 2
 win = False
-
+animated = None
 def draw():
     global score
     screen.clear()
@@ -50,9 +50,12 @@ def draw():
         screen.draw.text("Timer "+str(timer), (100, 40), color="white", fontsize=40)
         screen.draw.text("Zombie Boom Boom Level 1", (250,10), color="white",fontname="sharetechmono-regular", fontsize=40, lineheight=1.5)
     elif((gameOver is False) and (level is 2)):
+
+        screen.clear()
+        screen.blit('space', (0,200))
         alien.draw()
         bomb.draw()
-        screen.blit('space', (0,200))
+        barrier.draw()
         screen.draw.text("Zombie Boom Boom Level 2", (250,10), color="white",fontname="sharetechmono-regular", fontsize=40, lineheight=1.5)
         rocket_fire.draw()
         ship.draw()
@@ -65,6 +68,7 @@ def draw():
 ####################################################### ALIEN / STAR FUNCTIONS  #######################################################################################
 
 def move_alien(alien):
+    global animated
     global heart
     if(heart < 3):
         poke.y += 10
@@ -78,7 +82,14 @@ def move_alien(alien):
     alien.right += 1
     if alien.left > WIDTH:
         alien.right = 0
+    hitBar = rocket_fire.colliderect(barrier)
+    print(hitBar)
+    if((hitBar == True) and (animated is not None)):
 
+        animated.stop(complete= False)
+        rocket_fire.image = 'empty'
+        clock.schedule_unique(set_ship_normal, 1.0)
+        animated = None
 
     if bomb.y > HEIGHT:
         bomb.y = 10
@@ -90,6 +101,9 @@ def move_alien(alien):
     hit = bomb.colliderect(ship)
 
     hit_bomb = rocket_fire.colliderect(bomb)
+
+
+
     if collide == True:
         set_alien_hurt()
     if hit == True:
@@ -98,6 +112,8 @@ def move_alien(alien):
         clock.schedule_unique(drop_heart,0.2)
         clock.schedule_unique(set_ship_normal, 1.0)
     if(hit_bomb == True):
+        rocket_fire.image = 'empty'
+        clock.schedule_unique(set_ship_normal, 1.0)
         bomb.y = 10
         bomb.x = random.randint(10,900)
 
@@ -132,7 +148,8 @@ def move_rocket(ship):
         ship.x += 10 + offset
         rocket_fire.x +=10 + offset
     elif ((keyboard.space) & (rocket_fire.y == ship.y)):
-        animate(rocket_fire, pos =(ship.x, 0))
+        global animated
+        animated = animate(rocket_fire, pos =(ship.x, 0))
         sounds.shoot.play()
         clock.schedule_unique(reset_rocket, 1)
         screen.clear()
@@ -143,6 +160,7 @@ def move_rocket(ship):
     if ship.x < 0 :
         ship.x = WIDTH
         rocket_fire.x = WIDTH
+
 
 def set_ship_normal():
         ship.image = 'spaceship'
