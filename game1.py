@@ -19,17 +19,23 @@ score = 0
 gameOver = False
 restart = False
 timer = 1000
-level = 2
+level = 1
+win = False
 
 def draw():
     global score
     screen.clear()
     global gameOver
     global timer
+
     if(gameOver == True):
         screen.clear()
         screen.fill((0,0,0))
         screen.blit('over', (-200,0))
+    if((gameOver is False) and (win is True)):
+        screen.clear()
+        screen.fill((0,0,0))
+        screen.draw.text("Press Space to go to next level", (250,10), color="white",fontname="sharetechmono-regular", fontsize=40, lineheight=1.5)
     elif((gameOver is False) and (level is 1)):
         screen.blit('space', (0,200))
         ship.draw()
@@ -44,6 +50,8 @@ def draw():
         screen.draw.text("Timer "+str(timer), (100, 40), color="white", fontsize=40)
         screen.draw.text("Zombie Boom Boom Level 1", (250,10), color="white",fontname="sharetechmono-regular", fontsize=40, lineheight=1.5)
     elif((gameOver is False) and (level is 2)):
+        alien.draw()
+        bomb.draw()
         screen.blit('space', (0,200))
         screen.draw.text("Zombie Boom Boom Level 2", (250,10), color="white",fontname="sharetechmono-regular", fontsize=40, lineheight=1.5)
         rocket_fire.draw()
@@ -96,7 +104,6 @@ def move_alien(alien):
 
 def set_alien_hurt():
 
-
     clock.schedule_unique(add_hit, 0.2)
     alien.image = 'boom'
     sounds.ouch.play()
@@ -138,12 +145,12 @@ def move_rocket(ship):
         rocket_fire.x = WIDTH
 
 def set_ship_normal():
-    ship.image = 'spaceship'
-    rocket_fire.image = 'rocket'
+        ship.image = 'spaceship'
+        rocket_fire.image = 'rocket'
 
 def reset_rocket():
-    rocket_fire.x = ship.x
-    rocket_fire.y = ship.y
+        rocket_fire.x = ship.x
+        rocket_fire.y = ship.y
 
 
 ####################################################### HEART FUNCTIONS  #######################################################################################
@@ -190,7 +197,10 @@ def restart():
     global heart
     global hearts
     global gameOver
-
+    global score
+    score = 0
+    global win
+    win = False
     gameOver = False
     hearts[0].x = 850
     hearts[1].x = 890
@@ -200,11 +210,23 @@ def restart():
 def update():
     global timer
     global gameOver
-    move_alien(alien)
-    move_rocket(ship)
-    draw()
-    timer -=1
-    if(timer < 0):
-        gameOver = True
-    if((keyboard.r) & (gameOver == True)):
+    global score
+    global level
+    global win
+
+    if(score == 3):
+        win = True
+    if((win == True) and (keyboard.space)):
+        level =2
         restart()
+
+    if(gameOver is False):
+        move_alien(alien)
+        move_rocket(ship)
+        timer -=1
+    draw()
+
+    if(timer < 0):
+            gameOver = True
+    if((keyboard.r) & (gameOver == True)):
+           restart()
